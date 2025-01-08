@@ -36,16 +36,16 @@ const Navbar = () => {
             <Link to="/attendance" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center" onClick={toggleMenu}>
               <FontAwesomeIcon icon={faClipboardList} className="mr-3" /> Attendance
             </Link>
-            <Link to="/grades" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center" onClick={toggleMenu}>
+            {/* <Link to="/grades" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center" onClick={toggleMenu}>
               <FontAwesomeIcon icon={faFileAlt} className="mr-3" /> Grades
             </Link>
             <Link to="/exams" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center" onClick={toggleMenu}>
               <FontAwesomeIcon icon={faCalendarAlt} className="mr-3" /> Exams
-            </Link>
+            </Link> */}
             <Link to="/profile" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center" onClick={toggleMenu}>
               <FontAwesomeIcon icon={faUser} className="mr-3" /> Profile
             </Link>
-            <Link to="/requests" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center" onClick={toggleMenu}>
+            {/* <Link to="/requests" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center" onClick={toggleMenu}>
               <FontAwesomeIcon icon={faBell} className="mr-3" /> Requests
             </Link>
             <Link to="/help" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center" onClick={toggleMenu}>
@@ -53,8 +53,8 @@ const Navbar = () => {
             </Link>
             <Link to="/settings" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center" onClick={toggleMenu}>
               <FontAwesomeIcon icon={faCog} className="mr-3" /> Settings
-            </Link>
-            <Link to="/logout" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center" onClick={toggleMenu}>
+            </Link> */}
+            <Link to="/" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center" onClick={toggleMenu}>
               <FontAwesomeIcon icon={faSignOutAlt} className="mr-3" /> Logout
             </Link>
           </nav>
@@ -74,16 +74,16 @@ const Navbar = () => {
           <Link to="/attendance" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center">
             <FontAwesomeIcon icon={faClipboardList} className="mr-3" /> Attendance
           </Link>
-          <Link to="/grades" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center">
+          {/* <Link to="/grades" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center">
             <FontAwesomeIcon icon={faFileAlt} className="mr-3" /> Grades
           </Link>
           <Link to="/exams" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center">
             <FontAwesomeIcon icon={faCalendarAlt} className="mr-3" /> Exams
-          </Link>
+          </Link> */}
           <Link to="/profile" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center">
             <FontAwesomeIcon icon={faUser} className="mr-3" /> Profile
           </Link>
-          <Link to="/requests" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center">
+          {/* <Link to="/requests" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center">
             <FontAwesomeIcon icon={faBell} className="mr-3" /> Requests
           </Link>
           <Link to="/help" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center">
@@ -91,8 +91,8 @@ const Navbar = () => {
           </Link>
           <Link to="/settings" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center">
             <FontAwesomeIcon icon={faCog} className="mr-3" /> Settings
-          </Link>
-          <Link to="/logout" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center">
+          </Link> */}
+          <Link to="/" className="block py-3 px-4 rounded-lg hover:bg-gray-700 flex items-center">
             <FontAwesomeIcon icon={faSignOutAlt} className="mr-3" /> Logout
           </Link>
         </nav>

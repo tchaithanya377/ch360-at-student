@@ -20,9 +20,9 @@ const Login = () => {
         position: 'top-right',
         autoClose: 3000,
       });
-      navigate('/nodues');
+      navigate('/dashboard');
     }catch (err) {
-      console.error("Firebase Login Error:", err.code, err.message);
+      //console.error("Firebase Login Error:", err.code, err.message);
       toast.error(err.message || "Login Failed! Please try again.", {
         position: "top-right",
         autoClose: 3000,
