@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faTimesCircle, faPercentage } from '@fortawesome/free-solid-svg-icons';
+import { faCheckCircle, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 import './AttendancePage.css';
 import { db, auth } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -156,8 +156,8 @@ const AttendancePage = () => {
       ) : (
         <>
           {/* Today's Attendance */}
-          <motion.div
-            initial={{ opacity: 0 }}
+          {/* <motion.div
+             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1 }}
             className="bg-white shadow-lg rounded-lg p-4 md:p-6 mb-4 md:mb-6"
@@ -166,7 +166,7 @@ const AttendancePage = () => {
               Today's Attendance
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
-              {/* Present Classes */}
+              
               <div className="bg-green-100 p-4 rounded-lg">
                 <h3 className="text-lg md:text-xl font-bold text-green-600 mb-2 flex items-center">
                   <FontAwesomeIcon icon={faCheckCircle} className="text-green-500 text-2xl md:text-3xl mr-2" />
@@ -183,7 +183,7 @@ const AttendancePage = () => {
                 </ul>
               </div>
 
-              {/* Absent Classes */}
+           
               <div className="bg-red-100 p-4 rounded-lg">
                 <h3 className="text-lg md:text-xl font-bold text-red-600 mb-2 flex items-center">
                   <FontAwesomeIcon icon={faTimesCircle} className="text-red-500 text-2xl md:text-3xl mr-2" />
@@ -200,10 +200,10 @@ const AttendancePage = () => {
                 </ul>
               </div>
             </div>
-          </motion.div>
+          </motion.div> */}
 
           {/* Filters */}
-         <motion.div
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1 }}

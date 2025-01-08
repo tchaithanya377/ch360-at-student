@@ -1,215 +1,184 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { auth, db } from '../firebase';
+import { onAuthStateChanged } from 'firebase/auth';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle, faTimesCircle, faCalendarAlt } from '@fortawesome/free-solid-svg-icons';
 
 const StudentDashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [studentName, setStudentName] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [todaysClasses, setTodaysClasses] = useState([]);
+  const [courseNames, setCourseNames] = useState({});
+  const [facultyNames, setFacultyNames] = useState({});
+
+  useEffect(() => {
+    const fetchStudentName = async () => {
+      setLoading(true);
+      onAuthStateChanged(auth, async (user) => {
+        if (user) {
+          try {
+            const studentDoc = doc(db, 'students', 'III', 'A', user.uid);
+            const docSnap = await getDoc(studentDoc);
+
+            if (docSnap.exists()) {
+              setStudentName(docSnap.data().name);
+            } else {
+              console.error('No such student document!');
+            }
+          } catch (error) {
+            console.error('Error fetching student data:', error);
+          } finally {
+            setLoading(false);
+          }
+        }
+      });
+    };
+
+    fetchStudentName();
+  }, []);
+
+  useEffect(() => {
+    const fetchTodaysClasses = async () => {
+      const currentDay = new Intl.DateTimeFormat('en-US', { weekday: 'long' }).format(new Date());
+      try {
+        // Fetch timetable data based on the current day
+        const timetableCollection = collection(db, 'timetables', 'III', 'A');
+        const q = query(timetableCollection, where('day', '==', currentDay));
+        const querySnapshot = await getDocs(q);
+  
+        const classes = [];
+        const courseIds = new Set();
+        const facultyIds = new Set();
+  
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          console.log('Course ID (debugging):', data.courseId);  // Log the course ID
+          classes.push({
+            id: doc.id,
+            startTime: data.startTime,
+            endTime: data.endTime,
+            room: data.room,
+            periods: data.periods,
+            facultyId: data.facultyId,
+            courseId: data.courseId,
+          });
+          courseIds.add(data.courseId);
+          facultyIds.add(data.facultyId);  // Collect faculty IDs
+        });
+  
+        // Fetch course details based on course IDs
+        const courseDetails = {};
+        for (const courseId of courseIds) {
+          const courseDoc = doc(db, 'courses', 'III', 'A', 'sem1', 'courseDetails', courseId);
+          const courseSnap = await getDoc(courseDoc);
+  
+          if (courseSnap.exists()) {
+            courseDetails[courseId] = courseSnap.data().courseName;  // Use courseName from course details
+          } else {
+            console.error(`No course found for ID: ${courseId}`);
+          }
+        }
+  
+        console.log('Course Names:', courseDetails);  // Log the fetched course names
+        setCourseNames(courseDetails);
+
+        // Fetch faculty details based on faculty IDs
+        const facultyDetails = {};
+        for (const facultyId of facultyIds) {
+          const facultyDoc = doc(db, 'faculty', facultyId);
+          const facultySnap = await getDoc(facultyDoc);
+  
+          if (facultySnap.exists()) {
+            facultyDetails[facultyId] = facultySnap.data().name;  // Use faculty name
+          } else {
+            console.error(`No faculty found for ID: ${facultyId}`);
+          }
+        }
+  
+        console.log('Faculty Names:', facultyDetails);  // Log the fetched faculty names
+        setFacultyNames(facultyDetails);
+
+        // Sort classes by start time
+        classes.sort((a, b) => {
+          const timeA = a.startTime.split(':');
+          const timeB = b.startTime.split(':');
+          const minutesA = parseInt(timeA[0]) * 60 + parseInt(timeA[1]);
+          const minutesB = parseInt(timeB[0]) * 60 + parseInt(timeB[1]);
+          return minutesA - minutesB;
+        });
+
+        setTodaysClasses(classes);
+      } catch (error) {
+        console.error('Error fetching today\'s classes:', error);
+      }
+    };
+  
+    fetchTodaysClasses();
+  }, []);
 
   const handleDateChange = (date) => {
     setSelectedDate(date);
   };
-
-  // Dummy data for attendance
-  const attendance = {
-    '2024-06-01': 'present',
-    '2024-06-02': 'absent',
-    '2024-06-03': 'holiday',
-    '2024-06-04': 'present',
-    // Add more dates as needed
-  };
-
-  // Dummy data for classes
-  const classes = [
-    { id: 1, name: 'Math 101', total: 20, present: 18, absent: 2 },
-    { id: 2, name: 'Science 102', total: 22, present: 20, absent: 2 },
-    { id: 3, name: 'History 201', total: 18, present: 16, absent: 2 },
-    // Add more classes as needed
-  ];
-
-  const calculateAttendancePercentage = (present, total) => (present / total) * 100;
-
-  // Dummy data for weekly timetable
-  const timetable = {
-    Monday: [
-      { time: '09:00 - 10:00', subject: 'Math 101' },
-      { time: '11:00 - 12:00', subject: 'Science 102' },
-    ],
-    Tuesday: [
-      { time: '10:00 - 11:00', subject: 'History 201' },
-      { time: '12:00 - 13:00', subject: 'Math 101' },
-    ],
-    Wednesday: [
-      { time: '09:00 - 10:00', subject: 'Science 102' },
-      { time: '11:00 - 12:00', subject: 'Math 101' },
-    ],
-    Thursday: [
-      { time: '10:00 - 11:00', subject: 'History 201' },
-      { time: '12:00 - 13:00', subject: 'Science 102' },
-    ],
-    Friday: [
-      { time: '09:00 - 10:00', subject: 'Math 101' },
-      { time: '11:00 - 12:00', subject: 'History 201' },
-    ],
-  };
-
-  const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const currentDay = daysOfWeek[new Date().getDay()];
-  const todaysClasses = timetable[currentDay] || [];
 
   return (
     <div className="flex flex-col md:flex-row">
       <main className="flex-1 p-6 bg-gray-100 min-h-screen">
         <header className="flex flex-col md:flex-row justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">Welcome, Jane Doe!</h1>
+            <h1 className="text-3xl font-bold text-gray-800">
+              Welcome, {loading ? 'Loading...' : studentName || 'Student'}!
+            </h1>
             <p className="text-gray-600">Here's an overview of your current academic status.</p>
           </div>
           <img src="/avatar.jpg" alt="Profile" className="w-16 h-16 rounded-full mt-4 md:mt-0" />
         </header>
 
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <h3 className="text-lg font-bold">Current GPA</h3>
-            <p className="text-2xl text-blue-600 font-bold">3.85</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <h3 className="text-lg font-bold">Attendance</h3>
-            <p className="text-2xl text-green-600 font-bold">95%</p>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
-            <h3 className="text-lg font-bold">Next Class</h3>
-            <p className="text-xl">Math 101</p>
-            <p className="text-gray-600">10:00 AM - 11:00 AM</p>
-          </div>
-        </section>
-
+        {/* Today's Classes Section */}
         <section className="mb-8">
           <h2 className="text-xl font-bold mb-4">Today's Classes</h2>
-          <div className="bg-white rounded-lg shadow-md p-6 overflow-x-auto">
-            {todaysClasses.length > 0 ? (
-              <table className="w-full table-auto">
+          {todaysClasses.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full table-auto bg-white shadow-md rounded-md">
                 <thead>
-                  <tr>
-                    <th className="text-left py-2 break-words">Time</th>
-                    <th className="text-left py-2 break-words">Subject</th>
+                  <tr className="bg-gray-200">
+                    <th className="py-2 px-4 text-left text-sm font-semibold text-gray-700">Period</th>
+                    <th className="py-2 px-4 text-left text-sm font-semibold text-gray-700">Time</th>
+                    <th className="py-2 px-4 text-left text-sm font-semibold text-gray-700">Room</th>
+                    <th className="py-2 px-4 text-left text-sm font-semibold text-gray-700">Course</th>
+                    <th className="py-2 px-4 text-left text-sm font-semibold text-gray-700">Faculty</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {todaysClasses.map((cls, index) => (
-                    <tr key={index} className="border-b border-gray-200 hover:bg-gray-100">
-                      <td className="py-2">{cls.time}</td>
-                      <td className="py-2">{cls.subject}</td>
+                  {todaysClasses.map((cls) => (
+                    <tr key={cls.id} className="border-t hover:bg-gray-50">
+                      <td className="py-3 px-4 text-sm text-gray-700">{cls.periods.join(', ')}</td>
+                      <td className="py-3 px-4 text-sm text-gray-700">{cls.startTime} - {cls.endTime}</td>
+                      <td className="py-3 px-4 text-sm text-gray-700">{cls.room}</td>
+                      <td className="py-3 px-4 text-sm text-gray-700">
+                        {courseNames[cls.courseId] || 'Loading...'}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-700">
+                        {facultyNames[cls.facultyId] || 'Loading...'}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            ) : (
-              <p className="text-gray-600">No classes scheduled for today.</p>
-            )}
-          </div>
+            </div>
+          ) : (
+            <p>No classes scheduled for today.</p>
+          )}
         </section>
 
-        <section className="mb-8">
-          <h2 className="text-xl font-bold mb-4">Recent Grades</h2>
-          <div className="bg-white rounded-lg shadow-md p-6 overflow-x-auto">
-            <table className="w-full table-auto">
-              <thead>
-                <tr>
-                  <th className="text-left py-2 break-words">Course</th>
-                  <th className="text-left py-2 break-words">Assignment</th>
-                  <th className="text-left py-2 break-words">Grade</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="py-2">Math 101</td>
-                  <td className="py-2">Homework 1</td>
-                  <td className="py-2 text-green-600 font-bold">A</td>
-                </tr>
-                <tr>
-                  <td className="py-2">Science 102</td>
-                  <td className="py-2">Lab Report</td>
-                  <td className="py-2 text-yellow-600 font-bold">B</td>
-                </tr>
-                <tr>
-                  <td className="py-2">History 201</td>
-                  <td className="py-2">Essay</td>
-                  <td className="py-2 text-red-600 font-bold">C</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-bold mb-4">Upcoming Events</h2>
-          <div className="bg-white rounded-lg shadow-md p-6 overflow-x-auto">
-            <ul>
-              <li className="py-2 border-b">
-                <h3 className="text-lg font-bold">Midterm Exam</h3>
-                <p className="text-gray-600">Math 101 - March 15, 2024</p>
-              </li>
-              <li className="py-2 border-b">
-                <h3 className="text-lg font-bold">Project Presentation</h3>
-                <p className="text-gray-600">Science 102 - March 20, 2024</p>
-              </li>
-              <li className="py-2">
-                <h3 className="text-lg font-bold">Field Trip</h3>
-                <p className="text-gray-600">History 201 - March 25, 2024</p>
-              </li>
-            </ul>
-          </div>
-        </section>
-
-        <section className="mb-8">
+        {/* Attendance Calendar */}
+        <section>
           <h2 className="text-xl font-bold mb-4">Attendance Calendar</h2>
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <Calendar
-              onChange={handleDateChange}
-              value={selectedDate}
-              tileClassName={({ date, view }) => {
-                if (view === 'month') {
-                  const dateString = date.toISOString().split('T')[0];
-                  const attendanceStatus = attendance[dateString];
-                  return {
-                    'present': attendanceStatus === 'present',
-                    'absent': attendanceStatus === 'absent',
-                    'holiday': attendanceStatus === 'holiday',
-                  };
-                }
-              }}
-            />
-          </div>
-        </section>
-
-        <section className="mb-8">
-          <h2 className="text-xl font-bold mb-4">Class Attendance Summary</h2>
-          <div className="bg-white rounded-lg shadow-md p-6 overflow-x-auto">
-            <table className="w-full table-auto">
-              <thead>
-                <tr>
-                  <th className="text-left py-2 break-words">Class</th>
-                  <th className="text-left py-2 break-words">Total Classes</th>
-                  <th className="text-left py-2 break-words">Present</th>
-                  <th className="text-left py-2 break-words">Absent</th>
-                  <th className="text-left py-2 break-words">Percentage</th>
-                </tr>
-              </thead>
-              <tbody>
-                {classes.map(c => (
-                  <tr key={c.id} className="border-b border-gray-200 hover:bg-gray-100">
-                    <td className="py-2">{c.name}</td>
-                    <td className="py-2">{c.total}</td>
-                    <td className="py-2 text-green-600">{c.present}</td>
-                    <td className="py-2 text-red-600">{c.absent}</td>
-                    <td className="py-2">{calculateAttendancePercentage(c.present, c.total).toFixed(2)}%</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <Calendar
+            value={selectedDate}
+            onChange={handleDateChange}
+          />
         </section>
       </main>
     </div>
